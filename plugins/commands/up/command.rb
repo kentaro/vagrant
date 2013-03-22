@@ -31,7 +31,13 @@ module VagrantPlugins
         # after the "--"
         ssh_args = ARGV.drop_while { |i| i != "--" }
         ssh_args = ssh_args[1..-1]
-        options[:ssh_args] = ssh_args
+        unless ssh_args.empty?
+          options[:ssh_opts] = {
+            :extra_args => {
+              :ssh_args => ssh_args
+            }
+          }
+        end
 
         # If the remaining arguments ARE the SSH arguments, then just
         # clear it out. This happens because optparse returns what is
