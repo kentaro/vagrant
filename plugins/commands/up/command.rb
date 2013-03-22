@@ -12,7 +12,7 @@ module VagrantPlugins
       def execute
         options = {}
         opts = OptionParser.new do |o|
-          o.banner = "Usage: vagrant up [vm-name] [--[no-]provision] [--provider provider] [-h]"
+          o.banner = "Usage: vagrant up [vm-name] [--[no-]provision] [--provider provider] [-h] [-- extra ssh args]"
           o.separator ""
 
           build_start_options(o, options)
@@ -26,6 +26,18 @@ module VagrantPlugins
         # Parse the options
         argv = parse_options(opts)
         return if !argv
+
+        # Parse out the extra args to send to SSH, which is everything
+        # after the "--"
+        ssh_args = ARGV.drop_while { |i| i != "--" }
+        ssh_args = ssh_args[1..-1]
+        options[:ssh_args] = ssh_args
+
+        # If the remaining arguments ARE the SSH arguments, then just
+        # clear it out. This happens because optparse returns what is
+        # after the "--" as remaining ARGV, and Vagrant can think it is
+        # a multi-vm name (wrong!)
+        argv = [] if argv == ssh_args
 
         # Go over each VM and bring it up
         @logger.debug("'Up' each target VM...")
